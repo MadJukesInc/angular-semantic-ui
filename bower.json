@@ -31,10 +31,13 @@
     "CONTRIBUTING.md"
   ],
   "dependencies": {
-    "angular": "latest",
+    "angular": "^1.5.0",
     "semantic": "latest"
   },
   "devDependencies": {
-    "angular-mocks" : "latest"
+    "angular-mocks": "latest"
+  },
+  "resolutions": {
+    "angular": "^1.5.0"
   }
 }
