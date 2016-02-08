@@ -4,18 +4,20 @@ angular.module('angularify.semantic.dropdown', [])
   .controller('DropDownController', ['$scope',
     function($scope) {
       $scope.options = [];
+      const vm = this;
 
       this.add_option = function(title, value) {
         $scope.options.push({'title': title, 'value': value});
-        if (value == $scope.model) {
-          this.update_title(value)
+
+        if (angular.equals(value,$scope.model)) {
+          this.update_title(value, title)
         }
       };
 
       this.remove_option = function(title, value) {
         for (var index in $scope.options)
-          if ($scope.options[index].value == value &&
-            $scope.options[index].title == title) {
+          if ($scope.options[index].value === value &&
+            $scope.options[index].title === title) {
 
             $scope.options.splice(index, 1);
             // Remove only one item
@@ -23,28 +25,40 @@ angular.module('angularify.semantic.dropdown', [])
           }
       };
 
+      this.set_model_by_label = function(label) {
+        for (var index in $scope.options) {
+          console.log($scope.options[index].title + ' = ' + label);
+
+          if ($scope.options[index].title === label) {
+            $scope.$apply(function() {
+              vm.update_model(label, $scope.options[index].value);
+            });
+            return;
+          }
+        }
+      };
+
       this.update_model = function(title, value) {
         if ($scope.model !== value)
           $scope.model = value;
       };
 
-      this.update_title = function(value) {
+      this.update_title = function(value, title) {
         var changed = false;
 
-        for (var index in $scope.options) {
-          if ($scope.options[index].value == value) {
-            $scope.title = $scope.options[index].title;
-            changed = true;
-            return;
+        if (title) {
+          $scope.title = title;
+        } else {
+          for (var index in $scope.options) {
+            if (angular.equals($scope.options[index].value, value)) {
+              $scope.title = $scope.options[index].title;
+              changed = true;
+              return;
+            }
           }
         }
 
-        if (changed) {
-          $scope.text_class = 'text';
-        } else {
-          $scope.title = $scope.original_title;
-          $scope.text_class = 'default text';
-        }
+        $scope.text_class = 'text';
       };
 
     }
@@ -59,7 +73,8 @@ angular.module('angularify.semantic.dropdown', [])
       scope: {
         title: '@',
         open: '@',
-        model: '=ngModel'
+        model: '=ngModel',
+        disabled: '='
       },
       template: '<div class="{{ dropdown_class }}">' +
       '<div class="{{text_class}}">{{ title }}</div>' +
@@ -84,14 +99,14 @@ angular.module('angularify.semantic.dropdown', [])
          * Watch for ng-model changing
          */
         scope.element = element;
+
         scope.$watch('model', function(value) {
           // update title or reset the original title if its empty
           DropDownController.update_title(value);
+          element.dropdown('set value', value);
+          element.dropdown('set selected', value);
+          element.dropdown('set text', scope.title);
         });
-
-        if (scope.model) {
-          scope.title = scope.model;
-        }
 
         /*
          * Click handler
@@ -110,6 +125,17 @@ angular.module('angularify.semantic.dropdown', [])
           }
           scope.is_open = !scope.is_open;
         });
+
+        element.on('keydown', function(e) {
+          const code = e.keyCode || e.which;
+
+          if (code === 13 || code === 9) {
+            setTimeout(function() {
+              console.log(element.dropdown('get text'));
+              DropDownController.set_model_by_label(element.dropdown('get text'));
+            }, 10);
+          }
+        })
       }
     };
   })
@@ -146,14 +172,13 @@ angular.module('angularify.semantic.dropdown', [])
         //
         // Menu item click handler
         //
-        element.bind('click', function() {
+        element.on('click', function() {
           DropDownController.update_model(scope.item_title, scope.item_value);
         });
 
         scope.$on('$destroy', function() {
           DropDownController.remove_option(scope.item_title, scope.item_value);
         });
-
       }
     };
   });

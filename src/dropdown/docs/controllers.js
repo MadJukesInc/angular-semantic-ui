@@ -5,14 +5,21 @@ angular
 
 function RootCtrl ($scope) {
     $scope.dropdown_model = 'item3';
+    $scope.disableThing = function() {
+      $scope.disabled = !$scope.disabled;
+    }
+    $scope.dropdown_repeat_model = {a: 'test'};
+    //$scope.dropdown_items = [
+    //  'item1',
+    //  'item2',
+    //  'item3',
+    //  'item4'
+    //];
 
-    $scope.dropdown_repeat_model = 'item1';
-    $scope.dropdown_items = [
-      'item1',
-      'item2',
-      'item3',
-      'item4'
-    ];
+  $scope.dropdown_items = [
+    {a: 'test'},
+    {a: 'testing'}
+  ];
 
     $scope.dropdown_key_value_model = '';
     $scope.dropdown_key_value_items = {
